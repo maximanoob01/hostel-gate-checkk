@@ -1,0 +1,477 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Warden Live Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5em;
+            font-weight: 700;
+            text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .live-indicator {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 12px 20px;
+            border-radius: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .live-dot {
+            width: 12px;
+            height: 12px;
+            background: #48bb78;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: scale(1.2);
+            }
+        }
+
+        .live-text {
+            color: white;
+            font-weight: 600;
+            font-size: 1em;
+        }
+
+        .table-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            overflow-x: auto;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        thead {
+            background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        th {
+            color: white;
+            padding: 18px 16px;
+            text-align: left;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.85em;
+            border: none;
+            white-space: nowrap;
+        }
+
+        td {
+            padding: 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            color: #2d3748;
+            font-size: 0.95em;
+        }
+
+        tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        tbody tr:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(90, 103, 216, 0.05) 100%);
+            transform: scale(1.005);
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge.in {
+            background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%);
+            color: #22543d;
+            border: 2px solid #48bb78;
+        }
+
+        .badge.out {
+            background: linear-gradient(135deg, #fed7d7 0%, #fc8181 100%);
+            color: #742a2a;
+            border: 2px solid #f56565;
+        }
+
+        .ts {
+            font-size: 0.9em;
+            color: #718096;
+            white-space: nowrap;
+        }
+
+        .row-highlight {
+            background: linear-gradient(135deg, #fef5e7 0%, #fcf3cf 100%) !important;
+            animation: highlightFade 0.6s ease;
+        }
+
+        @keyframes highlightFade {
+            0% {
+                background: linear-gradient(135deg, #fef5e7 0%, #fcf3cf 100%);
+            }
+            100% {
+                background: white;
+            }
+        }
+
+        .connection-status {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+
+        .connection-status.connected {
+            color: #22543d;
+        }
+
+        .connection-status.disconnected {
+            color: #742a2a;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .status-dot.connected {
+            background: #48bb78;
+        }
+
+        .status-dot.disconnected {
+            background: #f56565;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        /* Responsive design */
+        @media (max-width: 1024px) {
+            th, td {
+                padding: 12px 10px;
+                font-size: 0.85em;
+            }
+
+            th {
+                font-size: 0.75em;
+            }
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 2em;
+            }
+
+            .table-card {
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+
+        @media (max-width: 600px) {
+            /* Stack table on very small screens */
+            table, thead, tbody, th, td, tr {
+                display: block;
+            }
+
+            thead tr {
+                position: absolute;
+                top: -9999px;
+                left: -9999px;
+            }
+
+            tr {
+                margin-bottom: 20px;
+                border: 2px solid #e2e8f0;
+                border-radius: 12px;
+                padding: 15px;
+                background: #f7fafc;
+            }
+
+            td {
+                border: none;
+                position: relative;
+                padding: 10px 10px 10px 45%;
+                text-align: right;
+            }
+
+            td:before {
+                position: absolute;
+                left: 15px;
+                width: 40%;
+                padding-right: 10px;
+                white-space: nowrap;
+                text-align: left;
+                font-weight: 600;
+                color: #4a5568;
+            }
+
+            td:nth-of-type(1):before { content: "Enrollment:"; }
+            td:nth-of-type(2):before { content: "Name:"; }
+            td:nth-of-type(3):before { content: "Room:"; }
+            td:nth-of-type(4):before { content: "Phone:"; }
+            td:nth-of-type(5):before { content: "Status:"; }
+            td:nth-of-type(6):before { content: "Updated:"; }
+
+            .connection-status {
+                bottom: 15px;
+                right: 15px;
+                font-size: 0.9em;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Live Status Dashboard</h1>
+            <div class="live-indicator">
+                <div class="live-dot"></div>
+                <span class="live-text">LIVE UPDATES</span>
+            </div>
+        </div>
+
+        <div class="table-card">
+            <table id="tbl">
+                <thead>
+                    <tr>
+                        <th>Enrollment</th>
+                        <th>Name</th>
+                        <th>Room</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Sample data - Replace with Django template -->
+                    <tr id="row-2021001">
+                        <td>2021001</td>
+                        <td>Rahul Sharma</td>
+                        <td>A-101</td>
+                        <td>+91 98765 43210</td>
+                        <td class="status"><span class="badge in">INSIDE</span></td>
+                        <td class="ts">—</td>
+                    </tr>
+                    <tr id="row-2021042">
+                        <td>2021042</td>
+                        <td>Priya Patel</td>
+                        <td>B-205</td>
+                        <td>+91 98765 43211</td>
+                        <td class="status"><span class="badge out">OUTSIDE</span></td>
+                        <td class="ts">—</td>
+                    </tr>
+                    <tr id="row-2021089">
+                        <td>2021089</td>
+                        <td>Amit Kumar</td>
+                        <td>C-312</td>
+                        <td>+91 98765 43212</td>
+                        <td class="status"><span class="badge in">INSIDE</span></td>
+                        <td class="ts">—</td>
+                    </tr>
+                    <tr id="row-2021134">
+                        <td>2021134</td>
+                        <td>Sneha Reddy</td>
+                        <td>A-204</td>
+                        <td>+91 98765 43213</td>
+                        <td class="status"><span class="badge out">OUTSIDE</span></td>
+                        <td class="ts">—</td>
+                    </tr>
+                    <tr id="row-2021156">
+                        <td>2021156</td>
+                        <td>Vikram Singh</td>
+                        <td>B-108</td>
+                        <td>+91 98765 43214</td>
+                        <td class="status"><span class="badge in">INSIDE</span></td>
+                        <td class="ts">—</td>
+                    </tr>
+                    <!-- Django template version:
+                    {% for s in students %}
+                    <tr id="row-{{ s.enrollment_number|escape }}">
+                        <td>{{ s.enrollment_number }}</td>
+                        <td>{{ s.full_name }}</td>
+                        <td>{{ s.room_number }}</td>
+                        <td>{{ s.phone }}</td>
+                        <td class="status">
+                            {% if s.is_inside %}<span class="badge in">INSIDE</span>{% else %}<span class="badge out">OUTSIDE</span>{% endif %}
+                        </td>
+                        <td class="ts">—</td>
+                    </tr>
+                    {% endfor %}
+                    -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="connection-status connected" id="connectionStatus">
+        <div class="status-dot connected"></div>
+        <span>Connected</span>
+    </div>
+
+    <script>
+    (function(){
+        const statusEl = document.getElementById('connectionStatus');
+        const statusDot = statusEl.querySelector('.status-dot');
+        const statusText = statusEl.querySelector('span');
+
+        function updateConnectionStatus(connected) {
+            if (connected) {
+                statusEl.className = 'connection-status connected';
+                statusDot.className = 'status-dot connected';
+                statusText.textContent = 'Connected';
+            } else {
+                statusEl.className = 'connection-status disconnected';
+                statusDot.className = 'status-dot disconnected';
+                statusText.textContent = 'Reconnecting...';
+            }
+        }
+
+        function setStatus(enr, isInside, ts) {
+            const row = document.getElementById("row-" + enr);
+            if(!row) return;
+            
+            const statusCell = row.querySelector(".status");
+            statusCell.innerHTML = isInside 
+                ? '<span class="badge in">INSIDE</span>'
+                : '<span class="badge out">OUTSIDE</span>';
+            
+            row.querySelector(".ts").textContent = new Date(ts).toLocaleString();
+            
+            // Enhanced highlight effect
+            row.classList.add('row-highlight');
+            setTimeout(() => {
+                row.classList.remove('row-highlight');
+            }, 600);
+        }
+
+        const protocol = location.protocol === "https:" ? "wss" : "ws";
+        let ws;
+
+        function connect() {
+            ws = new WebSocket(protocol + "://" + location.host + "/ws/warden/");
+            
+            ws.onopen = () => {
+                console.log('WebSocket connected');
+                updateConnectionStatus(true);
+            };
+
+            ws.onmessage = (ev) => {
+                try {
+                    const p = JSON.parse(ev.data);
+                    setStatus(p.enrollment, p.is_inside, p.timestamp);
+                } catch(e) { 
+                    console.error('Message parse error:', e); 
+                }
+            };
+
+            ws.onerror = (error) => {
+                console.error('WebSocket error:', error);
+                updateConnectionStatus(false);
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket closed');
+                updateConnectionStatus(false);
+                // Retry connection after 3 seconds
+                setTimeout(() => {
+                    console.log('Attempting to reconnect...');
+                    connect();
+                }, 3000);
+            };
+        }
+
+        // Initial connection
+        connect();
+    })();
+    </script>
+</body>
+</html>

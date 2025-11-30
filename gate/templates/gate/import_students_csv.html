@@ -1,0 +1,100 @@
+{% extends "gate/base.html" %}
+{% block title %}Import Students (CSV) · GateCheck{% endblock %}
+
+{% block content %}
+<style>
+  .page-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: calc(100vh - 80px);
+    padding: 40px 20px;
+    border-radius: 12px;
+  }
+  .card {
+    background: rgba(255,255,255,.95);
+    border-radius: 20px;
+    padding: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    backdrop-filter: blur(10px);
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  h1.title {
+    color: #fff;
+    text-shadow: 0 2px 8px rgba(0,0,0,.2);
+    text-align: center;
+    font-size: 2rem;
+    margin-bottom: 24px;
+  }
+  input[type="file"] {
+    padding: 12px 14px;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    font-size: 1rem;
+    background: #fff;
+    width: 100%;
+  }
+  button {
+    margin-top: 14px;
+    background: linear-gradient(135deg,#4299e1 0%,#3182ce 100%);
+    color: #fff;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  button:hover { filter: brightness(1.05); transform: translateY(-2px); }
+  .help {
+    color: #4a5568;
+    margin-top: 8px;
+    font-size: 0.95rem;
+  }
+  pre {
+    background: #f7fafc;
+    border-radius: 10px;
+    padding: 12px;
+    overflow: auto;
+    border: 1px solid #e2e8f0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  a.link {
+    display: inline-block;
+    margin-top: 12px;
+    color: #3182ce;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  a.link:hover { text-decoration: underline; }
+</style>
+
+<div class="page-bg">
+  <h1 class="title">Import Students (CSV)</h1>
+
+  <div class="card">
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <div>
+        {{ form.file }}
+        {{ form.file.errors }}
+        <div class="help">
+          CSV headers required: 
+          <b>enrollment_number, full_name, room_number, phone</b>
+        </div>
+      </div>
+      <button type="submit">Upload & Import</button>
+    </form>
+
+    <h3 style="margin-top:20px">Example CSV</h3>
+    <pre>
+enrollment_number,full_name,room_number,phone
+2021001,Rahul Sharma,A-101,9876543210
+2021042,Priya Patel,B-205,9876543211
+    </pre>
+
+    <a href="{% url 'add_student' %}" class="link">← Add Single Student</a>
+  </div>
+</div>
+{% endblock %}

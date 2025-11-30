@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% block title %}GateCheck{% endblock %}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <style>
+    /* ---------- Reset & Base ---------- */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #2d3748;
+    }
+
+    /* ---------- Navbar ---------- */
+    nav {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      padding: 18px 28px;
+      background: rgba(255, 255, 255, 0.1);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      backdrop-filter: blur(12px);
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      border-radius: 0 0 20px 20px;
+      animation: fadeDown 0.4s ease;
+    }
+
+    nav a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 1rem;
+      letter-spacing: 0.3px;
+      padding: 10px 16px;
+      border-radius: 10px;
+      transition: all 0.3s ease;
+    }
+
+    nav a:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    nav a.active {
+      background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%);
+      box-shadow: 0 6px 16px rgba(49, 130, 206, 0.4);
+    }
+
+    /* ---------- Content Wrapper ---------- */
+    main {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 20px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+      backdrop-filter: blur(8px);
+      margin-top: 40px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    /* ---------- Message Styling ---------- */
+    .messages {
+      margin-bottom: 20px;
+    }
+
+    .msg {
+      padding: 12px 16px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      font-weight: 500;
+      animation: slideIn 0.3s ease;
+    }
+
+    .msg.success { background: linear-gradient(135deg, #9ae6b4 0%, #68d391 100%); color: #22543d; }
+    .msg.error   { background: linear-gradient(135deg, #fc8181 0%, #f56565 100%); color: #742a2a; }
+    .msg.info    { background: linear-gradient(135deg, #63b3ed 0%, #4299e1 100%); color: #1a365d; }
+
+    /* ---------- Animations ---------- */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to   { opacity: 1; transform: none; }
+    }
+
+    /* ---------- Responsive ---------- */
+    @media (max-width: 640px) {
+      nav {
+        flex-wrap: wrap;
+        gap: 10px;
+        border-radius: 0 0 15px 15px;
+      }
+      nav a {
+        font-size: 0.9rem;
+        padding: 8px 12px;
+      }
+      main {
+        padding: 24px 14px;
+        margin-top: 24px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <nav>
+    <a href="{% url 'home' %}" class="{% if request.resolver_match.url_name == 'home' %}active{% endif %}">Home</a>
+    <a href="{% url 'check' %}" class="{% if request.resolver_match.url_name == 'check' %}active{% endif %}">Check</a>
+    <a href="{% url 'inside' %}" class="{% if request.resolver_match.url_name == 'inside' %}active{% endif %}">Inside</a>
+    <a href="{% url 'outside' %}" class="{% if request.resolver_match.url_name == 'outside' %}active{% endif %}">Outside</a>
+    <a href="{% url 'logs' %}" class="{% if request.resolver_match.url_name == 'logs' %}active{% endif %}">Logs</a>
+  </nav>
+
+  <main>
+    <div class="messages">
+      {% for m in messages %}
+        <div class="msg {% if m.tags %}{{ m.tags }}{% else %}info{% endif %}">{{ m }}</div>
+      {% endfor %}
+    </div>
+
+    {% block content %}{% endblock %}
+  </main>
+</body>
+</html>
