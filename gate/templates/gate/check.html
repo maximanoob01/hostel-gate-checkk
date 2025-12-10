@@ -1,0 +1,460 @@
+
+
+
+```html
+{% extends "gate/base.html" %}
+{% block title %}Check · Hostel Gate Check{% endblock %}
+
+{% block content %}
+<style>
+  :root {
+    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --glass-bg: rgba(255, 255, 255, 0.95);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.5);
+    --shadow-soft: 0 10px 40px rgba(0, 0, 0, 0.15);
+    --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.2);
+    
+    /* Status Colors */
+    --color-in-bg: #c6f6d5;
+    --color-in-text: #22543d;
+    --color-in-border: #48bb78;
+    
+    --color-out-bg: #fed7d7;
+    --color-out-text: #742a2a;
+    --color-out-border: #f56565;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+
+  .page-bg {
+    background: var(--primary-gradient);
+    min-height: calc(100vh - 80px); /* Adjusted for nav */
+    padding: 60px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+
+  .container {
+    width: 100%;
+    max-width: 850px;
+    animation: fadeIn 0.5s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .title {
+    color: #fff;
+    font-size: 2.5rem;
+    text-align: center;
+    margin-bottom: 40px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    text-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+
+  /* --- Modern Search Bar --- */
+  .search-card {
+    background: transparent;
+    margin-bottom: 30px;
+  }
+
+  .search-form {
+    display: flex;
+    background: #fff;
+    padding: 8px;
+    border-radius: 50px;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 4px solid rgba(255,255,255,0.2);
+  }
+
+  .search-form:focus-within {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover);
+  }
+
+  .search-input {
+    flex: 1;
+    border: none;
+    padding: 15px 25px;
+    font-size: 1.1rem;
+    background: transparent;
+    color: #4a5568;
+    outline: none;
+  }
+
+  .search-btn {
+    background: var(--primary-gradient);
+    color: #fff;
+    border: none;
+    padding: 0 40px;
+    border-radius: 40px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: filter 0.2s;
+  }
+
+  .search-btn:hover {
+    filter: brightness(1.1);
+  }
+
+  /* --- Profile Card Redesign --- */
+  .profile-card {
+    background: var(--glass-bg);
+    border-radius: 24px;
+    padding: 0; /* Reset padding for internal layout */
+    margin-bottom: 30px;
+    box-shadow: var(--shadow-soft);
+    overflow: hidden;
+    position: relative;
+    backdrop-filter: blur(10px);
+  }
+
+  /* Status Indication Bar */
+  .status-indicator {
+    height: 8px;
+    width: 100%;
+  }
+  .status-indicator.inside { background: var(--color-in-border); box-shadow: 0 0 20px var(--color-in-border); }
+  .status-indicator.outside { background: var(--color-out-border); box-shadow: 0 0 20px var(--color-out-border); }
+
+  .profile-content {
+    padding: 30px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 25px;
+    align-items: center;
+  }
+
+  .profile-avatar {
+    width: 130px;
+    height: 130px;
+    border-radius: 50%;
+    border: 4px solid #fff;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    overflow: hidden;
+    background: #edf2f7;
+    position: relative;
+  }
+
+  .profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-text {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a0aec0;
+    font-weight: 700;
+  }
+
+  .profile-details h2 {
+    color: #1a202c;
+    font-size: 1.8rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+
+  .info-item {
+    font-size: 0.95rem;
+    color: #4a5568;
+    background: rgba(0,0,0,0.03);
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+
+  .status-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-weight: 800;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .status-badge.inside { background: var(--color-in-bg); color: var(--color-in-text); }
+  .status-badge.outside { background: var(--color-out-bg); color: var(--color-out-text); }
+
+  /* Action Bar inside Card */
+  .action-bar {
+    background: #f7fafc;
+    padding: 20px 30px;
+    border-top: 1px solid #e2e8f0;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+  }
+
+  .note-input {
+    flex: 1;
+    padding: 12px 15px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    transition: all 0.2s;
+  }
+  .note-input:focus { border-color: #667eea; outline: none; }
+
+  .toggle-btn {
+    padding: 12px 24px;
+    border-radius: 10px;
+    color: #fff;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    transition: transform 0.2s;
+  }
+  .toggle-btn:hover { transform: translateY(-2px); }
+  
+  .btn-make-out { background: linear-gradient(135deg, #f56565 0%, #c53030 100%); }
+  .btn-make-in { background: linear-gradient(135deg, #48bb78 0%, #2f855a 100%); }
+
+  /* --- Results Table --- */
+  .results-card {
+    background: var(--glass-bg);
+    border-radius: 20px;
+    padding: 25px;
+    box-shadow: var(--shadow-soft);
+    backdrop-filter: blur(10px);
+  }
+
+  .results-card h3 {
+    color: #2d3748;
+    margin-bottom: 20px;
+    font-size: 1.4rem;
+    border-bottom: 2px solid #edf2f7;
+    padding-bottom: 10px;
+  }
+
+  .table-responsive {
+    overflow-x: auto;
+    border-radius: 12px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px;
+  }
+
+  th {
+    background: #f7fafc;
+    color: #4a5568;
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    padding: 15px;
+    text-align: left;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  td {
+    padding: 15px;
+    border-bottom: 1px solid #edf2f7;
+    color: #2d3748;
+    font-size: 0.95rem;
+  }
+
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #faf5ff; }
+
+  .mini-badge {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+  .mini-badge.in { background: var(--color-in-bg); color: var(--color-in-text); }
+  .mini-badge.out { background: var(--color-out-bg); color: var(--color-out-text); }
+
+  .action-links a {
+    color: #667eea;
+    text-decoration: none;
+    font-weight: 600;
+    margin-right: 10px;
+  }
+  .action-links button {
+    background: none;
+    border: 1px solid #cbd5e0;
+    padding: 4px 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: #4a5568;
+  }
+  .action-links button:hover { background: #edf2f7; color: #2d3748; }
+
+  .tip-box {
+    margin-top: 20px;
+    padding: 15px;
+    background: #ebf8ff;
+    border-left: 4px solid #4299e1;
+    color: #2b6cb0;
+    font-size: 0.9rem;
+    border-radius: 0 8px 8px 0;
+  }
+
+  /* --- Footer --- */
+  .footer-nav {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+    flex-wrap: wrap;
+  }
+
+  .nav-pill {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    text-decoration: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-weight: 600;
+    backdrop-filter: blur(4px);
+    transition: all 0.2s;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+
+  .nav-pill:hover {
+    background: #fff;
+    color: #667eea;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+  }
+
+  @media (max-width: 700px) {
+    .title { font-size: 2rem; }
+    .profile-content { grid-template-columns: 1fr; text-align: center; justify-items: center; }
+    .info-grid { grid-template-columns: 1fr; width: 100%; }
+    .action-bar { flex-direction: column; }
+    .note-input, .toggle-btn { width: 100%; }
+  }
+</style>
+
+<div class="page-bg">
+  <div class="container">
+    <h1 class="title">Student Check-In</h1>
+
+    <div class="search-card">
+      <form method="post" class="search-form">
+        {% csrf_token %}
+        <input type="text" name="enrollment_number" class="search-input" placeholder="Enter Enrollment No. or Name..." autofocus required>
+        <button type="submit" class="search-btn">Search</button>
+      </form>
+    </div>
+
+    {% if searched and student %}
+      <div class="profile-card">
+        <div class="status-indicator {% if student.is_inside %}inside{% else %}outside{% endif %}"></div>
+        
+        <div class="profile-content">
+          <div class="profile-avatar">
+            {% if student.photo %}
+              <img src="{{ student.photo.url }}" alt="{{ student.full_name }}">
+            {% else %}
+              <div class="avatar-text">NO PHOTO</div>
+            {% endif %}
+          </div>
+          
+          <div class="profile-details">
+            <h2>{{ student.full_name }}</h2>
+            <div class="info-grid">
+              <div class="info-item">ID: <b>{{ student.enrollment_number }}</b></div>
+              <div class="info-item">Room: <b>{{ student.room_number }}</b></div>
+              <div class="info-item">Phone: {{ student.phone }}</div>
+              <div class="info-item">
+                Status: 
+                <span class="status-badge {% if student.is_inside %}inside{% else %}outside{% endif %}">
+                  {% if student.is_inside %}INSIDE{% else %}OUTSIDE{% endif %}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <form method="post" action="{% url 'toggle' %}" class="action-bar">
+          {% csrf_token %}
+          <input type="hidden" name="enrollment_number" value="{{ student.enrollment_number }}">
+          <input type="text" name="note" class="note-input" placeholder="Add a note (optional)...">
+          
+          {% if student.is_inside %}
+            <button type="submit" class="toggle-btn btn-make-out">Mark as OUT →</button>
+          {% else %}
+            <button type="submit" class="toggle-btn btn-make-in">Mark as IN ←</button>
+          {% endif %}
+        </form>
+      </div>
+    {% endif %}
+
+    {% if searched and results %}
+      <div class="results-card">
+        <h3>Search Results</h3>
+        <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th>Enrollment</th>
+                <th>Name</th>
+                <th>Hostel</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for s in results %}
+                <tr>
+                  <td><b>{{ s.enrollment_number }}</b></td>
+                  <td>{{ s.full_name }}</td>
+                  <td>{{ s.hostel_name }}</td>
+                  <td>
+                    <span class="mini-badge {% if s.is_inside %}in{% else %}out{% endif %}">
+                      {% if s.is_inside %}IN{% else %}OUT{% endif %}
+                    </span>
+                  </td>
+                  <td class="action-links">
+                    <a href="{% url 'check' %}?enr={{ s.enrollment_number|urlencode }}">View</a>
+                    <form method="post" action="{% url 'toggle' %}" style="display:inline;">
+                      {% csrf_token %}
+                      <input type="hidden" name="enrollment_number" value="{{ s.enrollment_number }}">
+                      <button type="submit">Switch</button>
+                    </form>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <div class="tip-box">
+          <b>Tip:</b> Click "View" to see the full profile and add notes before switching status.
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="footer-nav">
+      <a href="{% url 'add_student' %}" class="nav-pill">+ Add Student</a>
+      <a href="{% url 'import_students_csv' %}" class="nav-pill">Import CSV</a>
+      <a href="{% url 'home' %}" class="nav-pill">← Dashboard</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

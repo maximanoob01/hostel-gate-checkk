@@ -1,0 +1,106 @@
+{% extends "gate/base.html" %}
+{% block title %}Logs · GateCheck{% endblock %}
+
+{% block content %}
+<style>
+  * { box-sizing: border-box; }
+  .gc-bg {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: calc(100vh - 100px);
+    padding: 40px 20px; border-radius: 12px;
+  }
+  .container { max-width: 1400px; margin: 0 auto; }
+  .title {
+    color: #fff; font-size: 2rem; text-align: center; margin-bottom: 24px; font-weight: 700;
+    text-shadow: 2px 2px 8px rgba(0,0,0,.2);
+  }
+  .table-card {
+    background: rgba(255,255,255,.95);
+    border-radius: 20px; padding: 28px;
+    box-shadow: 0 20px 60px rgba(0,0,0,.3);
+    backdrop-filter: blur(10px);
+    overflow-x: auto; animation: fadeIn .3s ease;
+  }
+  @keyframes fadeIn { from{opacity:0; transform:translateY(12px)} to{opacity:1; transform:none} }
+
+  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; }
+  thead { background: linear-gradient(135deg, #667eea 0%, #5a67d8 100%); }
+  th { color: #fff; padding: 16px; text-align: left; font-weight: 600; text-transform: uppercase; font-size: .85rem; white-space: nowrap; border: none; }
+  td { padding: 14px 16px; border-bottom: 1px solid #e2e8f0; color: #2d3748; font-size: .95rem; }
+  tbody tr { transition: transform .15s ease, background .15s ease; }
+  tbody tr:hover { background: rgba(102,126,234,.06); transform: scale(1.005); }
+  tbody tr:last-child td { border-bottom: none; }
+
+  .badge { display: inline-block; padding: 6px 14px; border-radius: 20px; font-weight: 700; font-size: .8rem; letter-spacing: .5px; text-transform: uppercase; }
+  .in  { background: linear-gradient(135deg, #c6f6d5 0%, #9ae6b4 100%); color: #22543d; border: 2px solid #48bb78; }
+  .out { background: linear-gradient(135deg, #fed7d7 0%, #fc8181 100%); color: #742a2a; border: 2px solid #f56565; }
+
+  .timestamp { font-size: .9rem; color: #4a5568; white-space: nowrap; }
+  .note { max-width: 260px; overflow: hidden; text-overflow: ellipsis; color: #718096; font-style: italic; }
+  .user { color: #5a67d8; font-weight: 600; }
+
+  .home-link { text-align: center; margin-top: 18px; }
+  .home-link a {
+    color: #fff; text-decoration: none; font-weight: 600; padding: 10px 22px; border-radius: 10px;
+    background: rgba(255,255,255,.22); display: inline-block; transition: all .2s ease; backdrop-filter: blur(10px);
+  }
+  .home-link a:hover { background: rgba(255,255,255,.32); transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0,0,0,.2); }
+
+  /* Mobile stacked table */
+  @media (max-width: 640px){
+    table, thead, tbody, th, td, tr { display: block; }
+    thead tr { position: absolute; top: -9999px; left: -9999px; }
+    tr { margin-bottom: 14px; border: 2px solid #e2e8f0; border-radius: 10px; padding: 10px; background: #fff; }
+    td { border: none; position: relative; padding-left: 48%; text-align: right; }
+    td:before {
+      position: absolute; left: 12px; width: 45%; padding-right: 10px; white-space: nowrap;
+      text-align: left; font-weight: 600; color: #4a5568;
+      content: attr(data-label);
+    }
+    .note { max-width: 100%; }
+  }
+</style>
+
+<div class="gc-bg">
+  <div class="container">
+    <h1 class="title">Recent Movements</h1>
+
+    <div class="table-card">
+      <table aria-label="Recent Movements">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Enrollment</th>
+            <th>Name</th>
+            <th>Direction</th>
+            <th>By</th>
+            <th>Note</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for l in logs %}
+            <tr>
+              <td class="timestamp" data-label="Time">{{ l.timestamp|date:"d M Y, h:i A" }}</td>
+              <td data-label="Enrollment">{{ l.student.enrollment_number }}</td>
+              <td data-label="Name">{{ l.student.full_name }}</td>
+              <td data-label="Direction">
+                <span class="badge {% if l.direction == 'IN' %}in{% else %}out{% endif %}">
+                  {{ l.direction }}
+                </span>
+              </td>
+              <td class="user" data-label="By">{% if l.recorded_by %}{{ l.recorded_by.username }}{% else %}-{% endif %}</td>
+              <td class="note" data-label="Note">{{ l.note }}</td>
+            </tr>
+          {% empty %}
+            <tr><td colspan="6" class="empty-state">No logs.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="home-link">
+      <a href="{% url 'home' %}">← Back to Home</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

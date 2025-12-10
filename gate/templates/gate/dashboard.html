@@ -1,0 +1,47 @@
+{% extends "gate/base.html" %}
+{% block title %}Dashboard · GateCheck{% endblock %}
+{% block content %}
+<style>
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-bottom:20px}
+  .card{background:#fff;border-radius:14px;padding:18px;box-shadow:0 10px 28px rgba(0,0,0,.12)}
+  .title{font-weight:800;margin-bottom:6px;color:#2d3748}
+  .muted{color:#4a5568}
+  .links{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .btn{display:inline-block;padding:10px 12px;border-radius:10px;text-decoration:none;font-weight:700;color:#fff}
+  .blue{background:linear-gradient(135deg,#4299e1,#3182ce)}
+  .green{background:linear-gradient(135deg,#48bb78,#38a169)}
+  .purple{background:linear-gradient(135deg,#7f9cf5,#667eea)}
+  .orange{background:linear-gradient(135deg,#f6ad55,#ed8936)}
+</style>
+
+<h1 style="margin-bottom:12px;">Welcome, {{ user.username }}</h1>
+
+<div class="cards">
+  <div class="card">
+    <div class="title">Inside</div>
+    <div class="muted" style="font-size:2rem;font-weight:800">{{ inside_count }}</div>
+  </div>
+  <div class="card">
+    <div class="title">Outside</div>
+    <div class="muted" style="font-size:2rem;font-weight:800">{{ outside_count }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="title">Quick actions</div>
+  <div class="links">
+    <a class="btn purple" href="{% url 'check' %}">Check / Toggle</a>
+    <a class="btn blue" href="{% url 'logs' %}">View Logs</a>
+
+    {% if user.has_perm 'gate.view_student' %}
+      <a class="btn orange" href="{% url 'inside' %}">Inside List</a>
+      <a class="btn orange" href="{% url 'outside' %}">Outside List</a>
+    {% endif %}
+
+    {% if user.has_perm 'gate.add_student' %}
+      <a class="btn green" href="{% url 'add_student' %}">Add Student</a>
+      <a class="btn green" href="{% url 'import_students_csv' %}">Import CSV</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
