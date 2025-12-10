@@ -1,9 +1,10 @@
+# build_files.sh
 echo "Building the project..."
+
+# 1. Install all dependencies from requirements.txt
 python3.9 -m pip install -r requirements.txt
 
-echo "Make Migrations..."
-python3.9 manage.py makemigrations --noinput
-python3.9 manage.py migrate --noinput
-
-echo "Collect Static..."
+# 2. Run collectstatic to organize CSS/JS files
 python3.9 manage.py collectstatic --noinput --clear
+
+echo "Build End"
