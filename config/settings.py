@@ -123,7 +123,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 # The absolute path to the directory where collectstatic will collect static files for deployment.
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = BASE_DIR / 'staticfiles_build'
 
 # Config for serving static files on Vercel
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
